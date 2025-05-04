@@ -15,13 +15,21 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
   String selectedCity = 'Astana';
   String searchQuery = '';
+  String sortOption = 'A-Z';
 
   @override
   Widget build(BuildContext context) {
-    final List<Hotel> filteredHotels = allHotels.where((hotel) {
+    List<Hotel> filteredHotels = allHotels.where((hotel) {
       return hotel.city == selectedCity &&
           hotel.name.toLowerCase().contains(searchQuery);
     }).toList();
+
+    // Сортировка по алфавиту
+    filteredHotels.sort((a, b) {
+      return sortOption == 'A-Z'
+          ? a.name.compareTo(b.name)
+          : b.name.compareTo(a.name);
+    });
 
     return ListView(
       padding: const EdgeInsets.all(16.0),
@@ -49,7 +57,7 @@ class _HomePageState extends State<HomePage> {
         ),
         const SizedBox(height: 16),
 
-        // 🔍 Поисковая строка
+        // 🔍 Поиск
         TextField(
           controller: _searchController,
           decoration: const InputDecoration(
@@ -65,7 +73,28 @@ class _HomePageState extends State<HomePage> {
         ),
         const SizedBox(height: 16),
 
-        // 🏨 Отели выбранного города
+        // ↕️ Сортировка
+        DropdownButtonFormField<String>(
+          value: sortOption,
+          decoration: const InputDecoration(
+            labelText: 'Сортировка',
+            border: OutlineInputBorder(),
+          ),
+          items: const [
+            DropdownMenuItem(value: 'A-Z', child: Text('A → Z')),
+            DropdownMenuItem(value: 'Z-A', child: Text('Z → A')),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                sortOption = value;
+              });
+            }
+          },
+        ),
+        const SizedBox(height: 16),
+
+        // 🏨 Отели
         Text(
           'Отели в $selectedCity',
           style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -109,15 +138,8 @@ class _HomePageState extends State<HomePage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  hotel.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  hotel.description,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                Text(hotel.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                Text(hotel.description, maxLines: 2, overflow: TextOverflow.ellipsis),
                               ],
                             ),
                           )
